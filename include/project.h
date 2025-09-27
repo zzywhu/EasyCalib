@@ -28,23 +28,21 @@
 #include <pcl/point_types.h>
 #include <pcl/common/common.h>
 using namespace std;
-enum ProjectionType { DEPTH, INTENSITY, BOTH };
+enum ProjectionType { DEPTH,
+                      INTENSITY,
+                      BOTH };
 
-double min_depth_ = 1.5;
+double min_depth_ = 0.5;
 double max_depth_ = 10;
 
-uchar Monochrome(int R)
-{
-    // ½«RÖµÓ³Éäµ½0-255·¶Î§ÄÚ
+uchar Monochrome(int R) {
+    // ï¿½ï¿½RÖµÓ³ï¿½äµ½0-255ï¿½ï¿½Î§ï¿½ï¿½
     return static_cast<uchar>(R);
 }
 
-
-cv::Vec3b FalseColor(int R)
-{
+cv::Vec3b FalseColor(int R) {
     cv::Vec3b color;
-    switch (R / 64)
-    {
+    switch (R / 64) {
     case 0:
         color = cv::Vec3b(0, 4 * R, 255);
         break;
@@ -61,40 +59,53 @@ cv::Vec3b FalseColor(int R)
     return color;
 }
 
-cv::Mat Proj2Img(cv::Mat InputImage, pcl::PointCloud<pcl::PointXYZI>::Ptr lidar_cloud,const int density, const Vector6d& extrinsic_params, double fx_ ,
-double fy_ ,
-double cx_ ,
-double cy_,
-double k1_ ,
-double k2_,
-double p1_,
-double p2_,
-double k3_ ,bool iffisheye)
-{
+cv::Mat Proj2Img(cv::Mat InputImage, pcl::PointCloud<pcl::PointXYZI>::Ptr lidar_cloud, const int density, const Vector6d &extrinsic_params, double fx_,
+                 double fy_,
+                 double cx_,
+                 double cy_,
+                 double k1_,
+                 double k2_,
+                 double p1_,
+                 double p2_,
+                 double k3_, bool iffisheye) {
     //ifstream fin(exfile, ios::in);
     Eigen::Matrix3d rotation;
     Eigen::Vector3d transation;
     Eigen::AngleAxisd rotation_vector3;
     rotation_vector3 =
-        Eigen::AngleAxisd(extrinsic_params[0], Eigen::Vector3d::UnitZ()) *
-        Eigen::AngleAxisd(extrinsic_params[1], Eigen::Vector3d::UnitY()) *
-        Eigen::AngleAxisd(extrinsic_params[2], Eigen::Vector3d::UnitX());
-    rotation=rotation_vector3.toRotationMatrix();
-    transation<<extrinsic_params[3],extrinsic_params[4],extrinsic_params[5];
+        Eigen::AngleAxisd(extrinsic_params[0], Eigen::Vector3d::UnitZ()) * Eigen::AngleAxisd(extrinsic_params[1], Eigen::Vector3d::UnitY()) * Eigen::AngleAxisd(extrinsic_params[2], Eigen::Vector3d::UnitX());
+    rotation = rotation_vector3.toRotationMatrix();
+    transation << extrinsic_params[3], extrinsic_params[4], extrinsic_params[5];
     //fin >> rotation(0, 0); fin >> rotation(0, 1); fin >> rotation(0, 2); fin >> transation(0);
     //fin >> rotation(1, 0); fin >> rotation(1, 1); fin >> rotation(1, 2); fin >> transation(1);
     //fin >> rotation(2, 0); fin >> rotation(2, 1); fin >> rotation(2, 2); fin >> transation(2);
-    cv::Mat k1 = cv::Mat::zeros(3, 3, CV_32F); cv::Mat k2 = cv::Mat::zeros(3, 3, CV_32F); cv::Mat c1 = cv::Mat::zeros(4, 1, CV_32F);
-    k1.at<float>(0, 0) = fx_; k1.at<float>(0, 1) = 0; k1.at<float>(0, 2) = cx_;
-    k1.at<float>(1, 0) = 0; k1.at<float>(1, 1) = fy_; k1.at<float>(1, 2) = cy_;
-    k1.at<float>(2, 0) = 0; k1.at<float>(2, 1) = 0; k1.at<float>(2, 2) = 1;
-    k2.at<float>(0, 0) = fx_ * 0.8; k2.at<float>(0, 1) = 0; k2.at<float>(0, 2) = cx_;
-    k2.at<float>(1, 0) = 0; k2.at<float>(1, 1) = fy_ * 0.8; k2.at<float>(1, 2) = cy_;
-    k2.at<float>(2, 0) = 0; k2.at<float>(2, 1) = 0; k2.at<float>(2, 2) = 1;
-    c1.at<float>(0) = k1_; c1.at<float>(1) = k2_; c1.at<float>(2) = p1_; c1.at<float>(3) = p2_; //c1.at<float>(4) = k3_;
+    cv::Mat k1 = cv::Mat::zeros(3, 3, CV_32F);
+    cv::Mat k2 = cv::Mat::zeros(3, 3, CV_32F);
+    cv::Mat c1 = cv::Mat::zeros(4, 1, CV_32F);
+    k1.at<float>(0, 0) = fx_;
+    k1.at<float>(0, 1) = 0;
+    k1.at<float>(0, 2) = cx_;
+    k1.at<float>(1, 0) = 0;
+    k1.at<float>(1, 1) = fy_;
+    k1.at<float>(1, 2) = cy_;
+    k1.at<float>(2, 0) = 0;
+    k1.at<float>(2, 1) = 0;
+    k1.at<float>(2, 2) = 1;
+    k2.at<float>(0, 0) = fx_ * 0.8;
+    k2.at<float>(0, 1) = 0;
+    k2.at<float>(0, 2) = cx_;
+    k2.at<float>(1, 0) = 0;
+    k2.at<float>(1, 1) = fy_ * 0.8;
+    k2.at<float>(1, 2) = cy_;
+    k2.at<float>(2, 0) = 0;
+    k2.at<float>(2, 1) = 0;
+    k2.at<float>(2, 2) = 1;
+    c1.at<float>(0) = k1_;
+    c1.at<float>(1) = k2_;
+    c1.at<float>(2) = p1_;
+    c1.at<float>(3) = p2_; //c1.at<float>(4) = k3_;
     cv::Mat ImageProjected;
-    if (iffisheye)
-    {
+    if (iffisheye) {
         cv::fisheye::undistortImage(InputImage, ImageProjected, k1, c1, k2);
         ImageProjected = InputImage;
         fx_ = k2.at<float>(0, 0);
@@ -102,59 +113,57 @@ double k3_ ,bool iffisheye)
         fy_ = k2.at<float>(1, 1);
         cy_ = k2.at<float>(1, 2);
     }
-    if (!iffisheye)
-    {
+    if (!iffisheye) {
         cv::undistort(InputImage, ImageProjected, k1, c1, k1);
     }
-    
+
     k1_ = 0;
     k2_ = 0;
     p1_ = 0;
     p2_ = 0;
     k3_ = 0;
     double depthMax = 0;
-   
+
     //////////////////////////////////////////////////////////////////////////////
 
     std::vector<cv::Point3f> pts_3d;
-    for (size_t i = 0; i < lidar_cloud->size(); i += density)
-    {
+    for (size_t i = 0; i < lidar_cloud->size(); i += density) {
         pcl::PointXYZI point_3d = lidar_cloud->points[i];
         pts_3d.emplace_back(cv::Point3f(point_3d.x, point_3d.y, point_3d.z));
         double depth = point_3d.x * point_3d.x + point_3d.y * point_3d.y + point_3d.z * point_3d.z;
         depth = sqrt(depth);
-        if (depthMax < depth&& depth > min_depth_ && depth < max_depth_)depthMax = depth;
+        if (depthMax < depth && depth > min_depth_ && depth < max_depth_) depthMax = depth;
     }
     std::vector<cv::Point2f> pts_2d;
 
-    for (int i = 0; i < pts_3d.size(); i++)
-    {
+    for (int i = 0; i < pts_3d.size(); i++) {
         Eigen::Vector3d pts_l;
-        pts_l(0, 0) = pts_3d[i].x; pts_l(1, 0) = pts_3d[i].y; pts_l(2, 0) = pts_3d[i].z;
+        pts_l(0, 0) = pts_3d[i].x;
+        pts_l(1, 0) = pts_3d[i].y;
+        pts_l(2, 0) = pts_3d[i].z;
         Eigen::Vector3d pts_c;
-        pts_c = rotation * pts_l +transation;
-        double check = pts_c(2,0);
+        pts_c = rotation * pts_l + transation;
+        double check = pts_c(2, 0);
         pts_c(0, 0) = pts_c(0, 0) / pts_c(2, 0);
         pts_c(1, 0) = pts_c(1, 0) / pts_c(2, 0);
         pts_c(2, 0) = 1;
-        double u_d; double v_d;
-        if (iffisheye)
-        {
-            cv::Mat distCoeffs = (cv::Mat_<double>(4, 1) << c1.at<float>(0,0), c1.at<float>(1, 0), c1.at<float>(2, 0), c1.at<float>(3, 0));
-            cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3) <<
-                fx_, 0, cx_,
-                0, fy_, cy_,
-                0, 0, 1);
+        double u_d;
+        double v_d;
+        if (iffisheye) {
+            cv::Mat distCoeffs = (cv::Mat_<double>(4, 1) << c1.at<float>(0, 0), c1.at<float>(1, 0), c1.at<float>(2, 0), c1.at<float>(3, 0));
+            cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3) << fx_, 0, cx_,
+                                    0, fy_, cy_,
+                                    0, 0, 1);
             cv::Mat rvec = (cv::Mat_<double>(3, 1) << 0, 0, 0);
             cv::Mat tvec = (cv::Mat_<double>(3, 1) << 0, 0, 0);
-            std::vector<cv::Point3f> objectPoints;  std::vector<cv::Point2f> imagePoints;
+            std::vector<cv::Point3f> objectPoints;
+            std::vector<cv::Point2f> imagePoints;
             objectPoints.push_back(cv::Point3f(pts_c(0, 0), pts_c(1, 0), 1));
             cv::fisheye::projectPoints(objectPoints, imagePoints, rvec, tvec, cameraMatrix, distCoeffs);
             u_d = imagePoints[0].x;
             v_d = imagePoints[0].y;
         }
-        if (!iffisheye)
-        {
+        if (!iffisheye) {
             double u = pts_c(0, 0);
             double v = pts_c(1, 0);
             double r = u * u + v * v;
@@ -163,36 +172,29 @@ double k3_ ,bool iffisheye)
             u_d = fx_ * u_d + cx_;
             v_d = fy_ * v_d + cy_;
         }
-        
-        if (check < 0)
-        {
+
+        if (check < 0) {
             pts_2d.push_back(cv::Point2f(100000, 100000));
-        }
-        else
-        {
+        } else {
             pts_2d.push_back(cv::Point2f(u_d, v_d));
         }
-        
     }
-   
+
     //undistort(image_before, image_, k1, c1, k2);
     int ImageHeight = ImageProjected.rows;
     int ImageWidth = ImageProjected.cols;
 
-    for (size_t i = 0; i < pts_2d.size(); ++i)
-    {
+    for (size_t i = 0; i < pts_2d.size(); ++i) {
         cv::Point2f point_2d = pts_2d[i];
         double depth = pts_3d[i].x * pts_3d[i].x + pts_3d[i].y * pts_3d[i].y + pts_3d[i].z * pts_3d[i].z;
         depth = sqrt(depth);
-        if (depth > min_depth_ && depth < max_depth_)
-        {
-            cv::Vec3b Color = FalseColor((uchar)(255 * depth / depthMax));//depthMax
+        if (depth > min_depth_ && depth < max_depth_) {
+            cv::Vec3b Color = FalseColor((uchar)(255 * depth / depthMax)); //depthMax
             /*cv::Vec3b Color = cv::Vec3b(Monochrome((uchar)(255 * depth / depthMax)),
                 Monochrome((uchar)(255 * depth / depthMax)),
                 Monochrome((uchar)(255 * depth / depthMax)));*/
-            if (point_2d.x >= 1 && point_2d.x < ImageWidth - 1 && point_2d.y >= 1 && point_2d.y < ImageHeight - 1)
-            {
-                cv::circle(ImageProjected, cv::Point2f((int)pts_2d[i].x, (int)pts_2d[i].y), 7, Color, -1);
+            if (point_2d.x >= 1 && point_2d.x < ImageWidth - 1 && point_2d.y >= 1 && point_2d.y < ImageHeight - 1) {
+                cv::circle(ImageProjected, cv::Point2f((int)pts_2d[i].x, (int)pts_2d[i].y), 1, Color, -1);
                 /*ImageProjected.at<cv::Vec3b>((int)pts_2d[i].y, (int)pts_2d[i].x) = Color;
                 ImageProjected.at<cv::Vec3b>((int)pts_2d[i].y - 1, (int)pts_2d[i].x) = Color;
                 ImageProjected.at<cv::Vec3b>((int)pts_2d[i].y, (int)pts_2d[i].x - 1) = Color;
@@ -208,9 +210,7 @@ double k3_ ,bool iffisheye)
     return ImageProjected;
 }
 
-
-double GetRad(double angle)
-{
+double GetRad(double angle) {
     return angle * 3.14159265358 / 180;
 }
 // cv::Mat Proj2Img2(cv::Mat InputImage, pcl::PointCloud<pcl::PointXYZI> lidar_cloud, const int density, string exfile, double fx_,
@@ -345,7 +345,6 @@ double GetRad(double angle)
 //     }
 //     return ImageProjected;
 // }
-
 
 // void dist(pcl::PointCloud<pcl::PointXYZI>& source, string file, double time, vector<motor> mt)
 // {

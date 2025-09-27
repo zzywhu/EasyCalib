@@ -29,11 +29,14 @@ link_directories(
 
 add_executable(calib src/ssl_fe.cpp)
 
-target_link_libraries (calib ${EIGEN3_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${CERES_LIBRARIES} ${OpenCV_LIBS})
-
 target_link_libraries(calib
   PUBLIC
-      OpenMP::OpenMP_CXX
- )
+    ${EIGEN3_LIBRARIES}
+    ${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
+    ${CERES_LIBRARIES}
+    ${OpenCV_LIBS}
+    OpenMP::OpenMP_CXX
+)
 
 
