@@ -1,3 +1,0 @@
-/home/zzy/SensorCalibration/EasyCalib/build/CMakeFiles/calib.dir
-/home/zzy/SensorCalibration/EasyCalib/build/CMakeFiles/edit_cache.dir
-/home/zzy/SensorCalibration/EasyCalib/build/CMakeFiles/rebuild_cache.dir
