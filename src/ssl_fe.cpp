@@ -226,7 +226,7 @@ int main(int argc, char **argv) {
 
     // Iteratively reduce the matching distance threshold
     // for (dis_threshold = 20; dis_threshold > 8; dis_threshold -= 1)
-    for (dis_threshold = 30; dis_threshold > 8; dis_threshold -= 1) {
+    for (dis_threshold = 100; dis_threshold > 8; dis_threshold -= 1) {
         // For each distance, do twice optimization
         for (int cnt = 0; cnt < 2; cnt++) {
             std::vector<std::vector<VPnPData>> vpnp_list_vect;

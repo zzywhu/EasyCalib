@@ -498,8 +498,12 @@ Calibration::Calibration(const std::string &image_file,
     pcl::PointCloud<pcl::PointXYZI>::Ptr raw_lidar_cloud;
     raw_lidar_cloud =
         pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
-
+    auto t_start = std::chrono::high_resolution_clock::now();
     detectTarget(raw_lidar_cloud_, raw_lidar_cloud, cluster_method);
+    auto t_end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> time_used = t_end - t_start;
+    std::cout << "detect target used time: " << time_used.count() << " s"
+              << std::endl;
     //pcl::copyPointCloud(*raw_lidar_cloud_, *raw_lidar_cloud);
 
     pcl::io::savePCDFileASCII(
@@ -1028,6 +1032,9 @@ cv::Mat Calibration::fillImg(const cv::Mat &input_img,
     return fill_img;
 }
 //???????????????
+
+int k = 1;
+std::ofstream fout("check/" + std::to_string(dataProcessingNum) + "_reprojection_error.txt", std::ios::out);
 cv::Mat Calibration::getConnectImg(
     const int dis_threshold,
     const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &rgb_edge_cloud,
@@ -1055,13 +1062,14 @@ cv::Mat Calibration::getConnectImg(
     }
     float sumDistance = 0;
     int sumNum = 0;
-
     int line_count = 0;
-    // ??????????
     int K = 1;
-    // ????????????????????????????????????????
     std::vector<int> pointIdxNKNSearch(K);
     std::vector<float> pointNKNSquaredDistance(K);
+
+    // 新增：保存每次迭代的reprojection error和对应的序号
+    std::vector<std::pair<int, float>> reprojection_errors;
+
     for (size_t i = 0; i < search_cloud->points.size(); i++) {
         pcl::PointXYZRGB searchPoint = search_cloud->points[i];
         if (kdtree->nearestKSearch(searchPoint, K, pointIdxNKNSearch,
@@ -1073,6 +1081,7 @@ cv::Mat Calibration::getConnectImg(
                 if (distance < dis_threshold) {
                     if (distance > 1) sumDistance = sumDistance + distance - 1;
                     sumNum++;
+                    reprojection_errors.push_back(std::make_pair(k, distance)); // 保存序号和error
                     cv::Scalar color = cv::Scalar(0, 255, 0);
                     line_count++;
                     if ((line_count % 3) == 0) {
@@ -1081,22 +1090,30 @@ cv::Mat Calibration::getConnectImg(
                                            -search_cloud->points[i].y),
                                  cv::Point(tree_cloud->points[pointIdxNKNSearch[j]].x,
                                            -tree_cloud->points[pointIdxNKNSearch[j]].y),
-                                 color, 1);
+                                 color, 3);
                     }
                 }
             }
         }
     }
+    k++;
     std::cout << "reprojection distance sum " << sumDistance
               << " reprojection num sum " << sumNum << " Average Pixel Error"
               << sumDistance / sumNum << std::endl;
+
+    // 保存reprojection error和迭代序号到check文件夹
+
+    for (size_t i = 0; i < reprojection_errors.size(); ++i) {
+        fout << "idx=" << reprojection_errors[i].first << ", error=" << reprojection_errors[i].second << "\n";
+    }
+
     for (size_t i = 0; i < rgb_edge_cloud->size(); i++) {
         connect_img.at<cv::Vec3b>(-rgb_edge_cloud->points[i].y,
                                   rgb_edge_cloud->points[i].x)[0] = 255;
         connect_img.at<cv::Vec3b>(-rgb_edge_cloud->points[i].y,
-                                  rgb_edge_cloud->points[i].x)[1] = 0;
+                                  rgb_edge_cloud->points[i].x)[1] = 255;
         connect_img.at<cv::Vec3b>(-rgb_edge_cloud->points[i].y,
-                                  rgb_edge_cloud->points[i].x)[2] = 0;
+                                  rgb_edge_cloud->points[i].x)[2] = 255;
     }
     for (size_t i = 0; i < search_cloud->size(); i++) {
         connect_img.at<cv::Vec3b>(-search_cloud->points[i].y,
@@ -1115,11 +1132,17 @@ cv::Mat Calibration::getConnectImg(
                 for (int xx = x - expand_size; xx <= x + expand_size; xx++) {
                     for (int yy = y - expand_size; yy <= y + expand_size; yy++) {
                         expand_edge_img.at<cv::Vec3b>(yy, xx)[0] = 255;
-                        expand_edge_img.at<cv::Vec3b>(yy, xx)[1] = 0;
-                        expand_edge_img.at<cv::Vec3b>(yy, xx)[2] = 0;
+                        expand_edge_img.at<cv::Vec3b>(yy, xx)[1] = 255;
+                        expand_edge_img.at<cv::Vec3b>(yy, xx)[2] = 255;
                     }
                 }
-            } else if (connect_img.at<cv::Vec3b>(y, x)[2] == 255) {
+            }
+        }
+    }
+
+    for (int x = expand_size; x < connect_img.cols - expand_size; x++) {
+        for (int y = expand_size; y < connect_img.rows - expand_size; y++) {
+            if (connect_img.at<cv::Vec3b>(y, x)[2] == 255 && connect_img.at<cv::Vec3b>(y, x)[0] == 0) {
                 for (int xx = x - expand_size; xx <= x + expand_size; xx++) {
                     for (int yy = y - expand_size; yy <= y + expand_size; yy++) {
                         expand_edge_img.at<cv::Vec3b>(yy, xx)[0] = 0;
@@ -1130,7 +1153,7 @@ cv::Mat Calibration::getConnectImg(
             }
         }
     }
-    return connect_img;
+    return expand_edge_img;
 }
 
 bool Calibration::checkFov(const cv::Point2d &p) {
@@ -1464,19 +1487,40 @@ bool isFeaturePoint(const cv::Mat &image, int x, int y, int radius) {
         int peak_sum = peak_counts[0] + peak_counts[1] + peak_counts[2];
         float peak_ratio = (float)peak_sum / (float)grad_dirs.size();
 
-        if ((float)min_interval / (float)max_interval > 0.8 && peak_ratio > 0.9) {
-            // 打印该点周围所有梯度数值到txt
-            std::ofstream fout("check/" + std::to_string(dataProcessingNum) + "_feature_grad.txt", std::ios::app);
-            fout << "x=" << x << ",y=" << y << ",grad_dirs=";
-            for (size_t i = 0; i < grad_dirs.size(); ++i) {
-                fout << grad_dirs[i];
-                if (i != grad_dirs.size() - 1) fout << ",";
+        if ((float)min_interval / (float)max_interval > 0.8 && peak_ratio > 0.8) {
+            // 只保存有效特征点的直方图数据
+            std::string hist_filename = "check/" + std::to_string(dataProcessingNum) + "_peak_histogram_" + std::to_string(x) + "_" + std::to_string(y) + ".txt";
+            std::ofstream hist_out(hist_filename, std::ios::out);
+            if (hist_out.is_open()) {
+                hist_out << "# Gradient Direction Histogram for point (" << x << "," << y << ")\n";
+                hist_out << "# bin_center,count,is_peak\n";
+                for (int i = 0; i < bin_num; ++i) {
+                    double bin_center = (i * 2 * M_PI / bin_num) - M_PI;
+                    bool is_peak = std::find(peak_bins.begin(), peak_bins.end(), i) != peak_bins.end();
+                    hist_out << bin_center << "," << hist[i] << "," << (is_peak ? 1 : 0) << "\n";
+                }
+                hist_out << "# Peak intervals: " << d1 << "," << d2 << "," << d3 << "\n";
+                hist_out << "# Peak ratio: " << peak_ratio << "\n";
+                hist_out << "# Min/Max interval ratio: " << (float)min_interval / (float)max_interval << "\n";
+                hist_out << "# Status: VALID_FEATURE_POINT\n";
+                hist_out.close();
+
+                // 打印该点周围所有梯度数值到txt
+                std::ofstream fout("check/" + std::to_string(dataProcessingNum) + "_feature_grad.txt", std::ios::app);
+                fout << "x=" << x << ",y=" << y << ",grad_dirs=";
+                for (size_t i = 0; i < grad_dirs.size(); ++i) {
+                    fout << grad_dirs[i];
+                    if (i != grad_dirs.size() - 1) fout << ",";
+                }
+                fout << "\n";
+                fout.close();
+
+                std::cout << "Saved valid histogram to: " << hist_filename << std::endl;
             }
-            fout << "\n";
-            fout.close();
             return true;
         }
     }
+
     return false;
 }
 
@@ -1534,6 +1578,8 @@ void Calibration::calinitialguess(const std::string &calib_config_file) {
     c1.at<float>(3) = p2_;
     cv::Mat rvec;
     cv::Mat tvec;
+    std::cout << "3d points: " << cluster3d.size() << std::endl;
+    std::cout << "2d points: " << cluster2d.size() << std::endl;
     cv::solvePnPRansac(cluster3d, cluster2d, k1, c1, rvec, tvec);
     cv::Mat R;
     cv::Rodrigues(rvec, R);

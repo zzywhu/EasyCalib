@@ -25,11 +25,17 @@
 *.la
 *.a
 *.lib
+build/
+eva/
 
 build/*
 .vscode/*
+EasyCalib/
 
 # Executables
 *.exe
 *.out
 *.app
+
+
+eva/*

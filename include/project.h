@@ -32,8 +32,8 @@ enum ProjectionType { DEPTH,
                       INTENSITY,
                       BOTH };
 
-double min_depth_ = 0.5;
-double max_depth_ = 10;
+double min_depth_ = 1;
+double max_depth_ = 1.5;
 
 uchar Monochrome(int R) {
     // ��Rֵӳ�䵽0-255��Χ��
@@ -194,7 +194,7 @@ cv::Mat Proj2Img(cv::Mat InputImage, pcl::PointCloud<pcl::PointXYZI>::Ptr lidar_
                 Monochrome((uchar)(255 * depth / depthMax)),
                 Monochrome((uchar)(255 * depth / depthMax)));*/
             if (point_2d.x >= 1 && point_2d.x < ImageWidth - 1 && point_2d.y >= 1 && point_2d.y < ImageHeight - 1) {
-                cv::circle(ImageProjected, cv::Point2f((int)pts_2d[i].x, (int)pts_2d[i].y), 1, Color, -1);
+                cv::circle(ImageProjected, cv::Point2f((int)pts_2d[i].x, (int)pts_2d[i].y), 7, Color, -1);
                 /*ImageProjected.at<cv::Vec3b>((int)pts_2d[i].y, (int)pts_2d[i].x) = Color;
                 ImageProjected.at<cv::Vec3b>((int)pts_2d[i].y - 1, (int)pts_2d[i].x) = Color;
                 ImageProjected.at<cv::Vec3b>((int)pts_2d[i].y, (int)pts_2d[i].x - 1) = Color;

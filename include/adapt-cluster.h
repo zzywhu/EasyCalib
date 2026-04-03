@@ -55,7 +55,7 @@ void pointCloudcluster(
     // 欧式聚类
     std::vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<pcl::PointXYZI> ec;
-    ec.setClusterTolerance(0.05); // 5cm
+    ec.setClusterTolerance(0.10); // 5cm
     ec.setMinClusterSize(10);
     ec.setMaxClusterSize(1000000);
     ec.setSearchMethod(tree);
