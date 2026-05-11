@@ -25,12 +25,16 @@
 *.la
 *.a
 *.lib
-build/
 eva/
 
-build/*
+build/CMakeFiles/*
+build/CMakeCache.txt
+build/Makefile
+build/cmake_install.cmake
 .vscode/*
-EasyCalib/
+EasyCalib/*
+
+pics/*
 
 # Executables
 *.exe

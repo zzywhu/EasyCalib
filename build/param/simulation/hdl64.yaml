@@ -1,0 +1,50 @@
+%YAML:1.0
+
+
+# Initial extrinsic (usually provided by hand measurement or cad design)
+data_num: 4
+image_path: /home/zzy/EasyCalib/livox_mid360/simulation
+pcd_path: /home/zzy/EasyCalib/livox_mid360/simulation
+
+ext_file: jpg
+
+undist: 2 #0 for origin 1 for fiseye 2 for pinhole
+
+cluster_method: 1 #0 for vlp16 1 for mid360
+
+CameraMat: !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [1024, 0, 1024, 0, 1024, 768, 0, 0,	1]
+
+DistCoeffs: !!opencv-matrix
+  rows: 5
+  cols: 1
+  dt: d
+  data: [0.0, 0.0, 0.0, 0.0, 0.0]
+
+Canny.gray_threshold: 5
+Canny.len_threshold: 5
+
+# Params for Voxel Cutting & Plane Fitting & Edge Extraction
+Voxel.size: 1000
+# Voxel.down_sample_size: 0.02
+Plane.min_points_size: 30 #60
+Plane.normal_theta_min: 30
+Plane.normal_theta_max: 150
+Plane.max_size: 5
+Ransac.dis_threshold: 0.020
+Ransac.iter_num: 200
+
+Edge.SearchForPointDis: 0.05
+# Edge.min_dis_threshold: 0.03
+# Edge.max_dis_threshold: 0.06
+
+# Params for color point clouds
+Color.dense: 1
+Color.intensity_threshold: 10
+
+
+initial2d_radius: 20
+

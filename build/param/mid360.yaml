@@ -1,0 +1,56 @@
+%YAML:1.0
+
+
+# Initial extrinsic (usually provided by hand measurement or cad design)
+data_num: 2
+image_path: /home/zzy/SensorCalibration/EasyCalib/EasyCalib/livox_mid360/origin_data
+pcd_path: /home/zzy/SensorCalibration/EasyCalib/EasyCalib/livox_mid360/origin_data
+
+ext_file: jpg
+
+undist: 2 #0 for origin 1 for fiseye 2 for pinhole
+
+cluster_method: 1 #0 for vlp16 1 for mid360
+
+CameraMat: !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [1307.155515985441, 0, 629.103364541975, 0, 1307.466431699723, 488.482227839936, 0, 0,	1]
+
+DistCoeffs: !!opencv-matrix
+  rows: 5
+  cols: 1
+  dt: d
+  data: [-0.0723229729693709, 0.145356069454727, 0.0, 0.0, 0.0]
+
+Canny.gray_threshold: 5
+Canny.len_threshold: 5
+
+# Params for Voxel Cutting & Plane Fitting & Edge Extraction
+Voxel.size: 1000
+# Voxel.down_sample_size: 0.02
+Plane.min_points_size: 30 #60
+Plane.normal_theta_min: 30
+Plane.normal_theta_max: 150
+Plane.max_size: 5
+Ransac.dis_threshold: 0.01
+Ransac.iter_num: 200
+
+Edge.SearchForPointDis: 0.02
+# Edge.min_dis_threshold: 0.03
+# Edge.max_dis_threshold: 0.06
+
+# Params for color point clouds
+Color.dense: 1
+Color.intensity_threshold: 10
+
+
+initial2d_radius: 100
+
+
+initial_guess_result:
+  rows: 4
+  cols: 4
+  dt: CV_64F
+  data: [-0.014792, -0.999888, 0.00244046, -0.000677809, 0.360016, -0.00760296, -0.932915, -0.0756157, 0.932829, -0.0129211, 0.360088, 0.0780401, 0, 0, 0, 1]

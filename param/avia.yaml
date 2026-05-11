@@ -1,0 +1,55 @@
+%YAML:1.0
+
+
+# Initial extrinsic (usually provided by hand measurement or cad design)
+data_num: 6
+image_path: /home/zzy/EasyCalib/livox_avia/origin_data
+pcd_path: /home/zzy/EasyCalib/livox_avia/origin_data
+
+ext_file: png
+
+undist: 2 #0 for origin 1 for fiseye 2 for pinhole 
+
+cluster_method: 1 #0 for vlp16 1 for mid360
+
+CameraMat: !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [644.784, 0, 639.069, 0, 643.992, 362.974, 0, 0,	1]
+
+DistCoeffs: !!opencv-matrix
+  rows: 5
+  cols: 1
+  dt: d
+  data: [-0.0572937,0.0660677,0.000472092,0.000696672,-0.0213133]
+
+Canny.gray_threshold: 5
+Canny.len_threshold: 5
+
+# Params for Voxel Cutting & Plane Fitting & Edge Extraction
+Voxel.size: 1000
+# Voxel.down_sample_size: 0.02
+Plane.min_points_size: 30 #60
+Plane.normal_theta_min: 30
+Plane.normal_theta_max: 150
+Plane.max_size: 5
+Ransac.dis_threshold: 0.050
+Ransac.iter_num: 200
+
+Edge.SearchForPointDis: 0.05
+# Edge.min_dis_threshold: 0.03
+# Edge.max_dis_threshold: 0.06
+
+# Params for color point clouds
+Color.dense: 1
+Color.intensity_threshold: 10
+
+
+initial2d_radius: 40
+  
+initial_guess_result:
+  rows: 4
+  cols: 4
+  dt: CV_64F
+  data: [0.00736581, -0.993958, -0.00550205, -0.00707065, -0.0594509, 0.00505455, -0.988218, 0.205918, 0.998204, 0.00767979, -0.0594111, 0.0366859, 0, 0, 0, 1]
