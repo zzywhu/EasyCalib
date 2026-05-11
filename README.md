@@ -1,12 +1,58 @@
-# EasyCalib
+<div align="center">
+  <h1>EasyCalib</h1>
+  <h2>A Novel Target for High-Accuracy Fully Automatic Extrinsic Calibration of Camera and LiDAR</h2>
+  <p><strong><i>IEEE Transactions on Instrumentation and Measurement, 2026</i></strong></p>
+  <br>
 
-Official code for the paper  
-**EasyCalib: A Novel Target for High-Accuracy Fully Automatic Extrinsic Calibration of Camera and LiDAR**
+  <a href="https://github.com/zzywhu/EasyCalib">
+    <img src="https://img.shields.io/badge/Code-GitHub-black?logo=github" alt="Code">
+  </a>
+  <a href="https://ieeexplore.ieee.org/abstract/document/11495237">
+    <img src="https://img.shields.io/badge/Paper-IEEE%20Xplore-00629B" alt="Paper">
+  </a>
+  <a href="https://doi.org/10.1109/TIM.2026.3687975">
+    <img src="https://img.shields.io/badge/DOI-10.1109%2FTIM.2026.3687975-blue" alt="DOI">
+  </a>
+</div>
 
-[IEEE Xplore](https://ieeexplore.ieee.org/abstract/document/11495237)
+<br>
 
-**Authors**  
-Zhiyu Zhou, Zhi Gao, Min Cao, Jingshi Wang, Yong Li, Zhipeng Lin, Wenbin Yang, Xiaonan Wang, Qiyuan Zhang
+Official implementation of **EasyCalib**, a fully automatic camera-LiDAR extrinsic calibration method with a novel calibration target for high-accuracy sensor alignment.
+
+## Quick Start
+
+### Prerequisites
+
+- Ubuntu
+- CMake
+- PCL >= 1.8
+- Eigen3
+- Ceres Solver
+- OpenCV
+- OpenMP
+
+### Build
+
+```bash
+mkdir -p build
+cd build
+cmake ..
+make -j8
+```
+
+### Run
+
+```bash
+./build/calib param/avia.yaml
+```
+
+Example configuration files:
+
+- `param/avia.yaml`
+- `param/mid360.yaml`
+- `param/vlp16.yaml`
+
+The calibration result will be written to `result/extrinsic.txt`.
 
 ## Configuration File
 
@@ -18,8 +64,9 @@ Zhiyu Zhou, Zhi Gao, Min Cao, Jingshi Wang, Yong Li, Zhipeng Lin, Wenbin Yang, X
 | `ext_file` | Image file extension, such as `png` or `jpg`. |
 | `initial_guess_result` (optional) | Initial extrinsic file. In most cases this does not need to be set, because the algorithm will automatically estimate the initial extrinsic parameters. |
 
+## Citation
 
-**Citation**
+If you find this project useful, please consider citing our paper:
 
 ```bibtex
 @ARTICLE{11495237,
