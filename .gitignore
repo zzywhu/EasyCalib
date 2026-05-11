@@ -31,6 +31,7 @@ build/CMakeFiles/*
 build/CMakeCache.txt
 build/Makefile
 build/cmake_install.cmake
+build/calib
 .vscode/*
 EasyCalib/*
 
