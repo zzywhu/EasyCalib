@@ -1,6 +1,5 @@
 <div align="center">
-  <h1>EasyCalib</h1>
-  <h2>A Novel Target for High-Accuracy Fully Automatic Extrinsic Calibration of Camera and LiDAR</h2>
+  <h1>EasyCalib: A Novel Target for High-Accuracy Fully Automatic Extrinsic Calibration of Camera and LiDAR</h1>
   <p><strong><i>IEEE Transactions on Instrumentation and Measurement, 2026</i></strong></p>
   <br>
 
