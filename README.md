@@ -22,8 +22,6 @@ Official implementation of **EasyCalib**, a fully automatic camera-LiDAR extrins
 
 ### Prerequisites
 
-- Ubuntu
-- CMake
 - PCL >= 1.8
 - Eigen3
 - Ceres Solver
